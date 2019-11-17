@@ -6,8 +6,6 @@ import (
 	"os"
 )
 
-// TODO add dependencies to both Project.dep, sh and bat build scripts
-
 func main() {
 
 	app := cli.NewApp()

@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/satori/go.uuid"
 	"go-distribution-fuzeday/messaging"
@@ -85,20 +84,12 @@ func ExecuteSimulation(numPlayers int, externalWaitGroup *sync.WaitGroup) {
 
 }
 
-func getDisplayOutputChannel() chan<- *models.DisplayStatus {
-	rawOutput := messaging.GetOutputChannel(messaging.DisplayChannelName)
-	res := make(chan *models.DisplayStatus)
-
-	// Display channel population, executed in function closure
-	go func() {
-		for bs := range res {
-			val, err := json.Marshal(bs)
-			if err == nil {
-				rawOutput <- val
-			}
-		}
-	}()
-	return res
+func getDisplayOutputChannel() chan *models.DisplayStatus {
+	//TODO Challenge:
+	// get []byte output channel from messaging,
+	// create an internal goroutine that consumes messages from an internal *DisplayStatus channel,
+	// serialize them to []byte and populates return DIRECTIONAL output []byte channel
+	return messaging.GlobalDisplayChannel
 }
 
 func ThrowBall(x, y float64) {
@@ -116,6 +107,6 @@ func ThrowBall(x, y float64) {
 	bs := &models.Ball{X: x, Y: y, Vx: 0, Vy: 0, Vz: 0, Z: 50}
 	bs.LastUpdated = time.Now()
 
-	models.GetBallOutputChannel() <- bs
+	models.GetBallChannel() <- bs
 
 }

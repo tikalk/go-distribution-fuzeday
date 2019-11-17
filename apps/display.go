@@ -1,59 +1,44 @@
 package apps
 
 import (
-	"encoding/json"
-	"fmt"
 	"go-distribution-fuzeday/messaging"
 	"go-distribution-fuzeday/models"
-	"net/http"
 	"sync"
 )
 
 func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 
-	displayInput := getDisplayChannel()
+	displayInput := getDisplayInputChannel()
 
 	gameField := models.NewGameField()
 
-	go func() {
-		http.HandleFunc("/display", func(w http.ResponseWriter, r *http.Request) {
-			gfSer, err := json.Marshal(gameField)
-			if err != nil {
-				// TODO handle gracefully
-				return
-			}
+	// HTTP Server
+	//TODO Challenge:
+	//	1. launch HTTP server here on 8080
+	//	2. requests to "/display" should return a json representation of the updated gameField
+	//	3. requests to "/client/" should return static files from directory "display_client". Use http.FileServer...
+	// 	------
+	// 	Tip: use http.HandleFunc and http.ListenAndServe
 
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(gfSer)
-		})
-		fs := http.FileServer(http.Dir("display_client"))
-		http.Handle("/client/", http.StripPrefix("/client", fs))
+	// Game Field updater
+	//TODO Challenge:
+	//	1. iterate over display channel
+	//	2. update gamefield on each consumed value
+	//	------
+	//	Tip: use iteration over channel range
 
-		http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-	}()
-
-	for ds := range displayInput {
-		gameField.Update(ds)
-	}
+	displayInput = displayInput // only to prevent "unused variable error", remove after implementation
+	gameField = gameField       // only to prevent "unused variable error", remove after implementation
 
 	if externalWaitGroup != nil {
 		externalWaitGroup.Done()
 	}
 }
 
-func getDisplayChannel() <-chan *models.DisplayStatus {
-	rawInput := messaging.GetInputChannel(messaging.DisplayChannelName)
-	res := make(chan *models.DisplayStatus)
-
-	// Display channel population, executed in function closure
-	go func() {
-		for val := range rawInput {
-			ds := &models.DisplayStatus{}
-			err := json.Unmarshal(val, ds)
-			if err == nil {
-				res <- ds
-			}
-		}
-	}()
-	return res
+func getDisplayInputChannel() chan *models.DisplayStatus {
+	//TODO Challenge:
+	//  get []byte input channel from messaging,
+	//  create an internal goroutine that consumes messages from it,
+	//  de-serialize them to return type and populates return DIRECTIONAL channel
+	return messaging.GlobalDisplayChannel
 }

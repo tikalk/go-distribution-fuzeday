@@ -22,9 +22,9 @@ type Player struct {
 	MaxVelocity float64
 	LastKick    time.Time
 
-	ball       *Ball
-	ballInput  <-chan *Ball
-	ballOutput chan<- *Ball
+	ball *Ball
+
+	ballChannel chan *Ball // TODO Challenge: replace with directional input and output channels (<-chan and chan<-)
 
 	idleV     float64
 	idleVx    float64
@@ -45,7 +45,7 @@ func (p *Player) GetDisplayStatus() *DisplayStatus {
 	return res
 }
 
-func reportDisplay(item DisplayStatusProvider, channel chan<- *DisplayStatus) {
+func reportDisplay(item DisplayStatusProvider, channel chan *DisplayStatus) {
 	if channel == nil || item == nil {
 		return
 	}
@@ -53,33 +53,20 @@ func reportDisplay(item DisplayStatusProvider, channel chan<- *DisplayStatus) {
 	channel <- item.GetDisplayStatus()
 }
 
-func (p *Player) Activate(displayChannel chan<- *DisplayStatus, wg *sync.WaitGroup) {
+func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup) {
 
-	p.ballInput = GetBallInputChannel()
-	p.ballOutput = GetBallOutputChannel()
+	p.ballChannel = GetBallChannel()
 
 	go p.setIdleKinematics()
 
 	// Closing distance to ball
-	go func() {
-		for {
-			select {
-			case <-time.After(200 * time.Millisecond):
-				p.runToBall()
-			}
-		}
-	}()
+	// TODO Challenge: launch a goroutine that calls p.runToBall every 200 milliseconds or so...
 
-	go func() {
-		for {
-			select {
-			case <-time.After(200 * time.Millisecond):
-				reportDisplay(p, displayChannel)
-			}
-		}
-	}()
+	// reporting player display
+	// TODO Challenge: launch a goroutine that calls reportDisplay() every 200 milliseconds or so...
 
-	go p.mainLifeCycle(displayChannel, wg)
+	// launching main life cycle
+	// TODO Challenge: call p.mainLifeCycle in a goroutine and implement it internally
 
 }
 
@@ -98,49 +85,20 @@ func (p *Player) setIdleKinematics() {
 	}
 }
 
-func (p *Player) mainLifeCycle(displayChannel chan<- *DisplayStatus, wg *sync.WaitGroup) {
+func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.WaitGroup) {
 
-	ticker := time.NewTicker(10 * time.Second)
+	// TODO Tip: a ticker returns a channel that is automatically populated with a time message every defined interval
+	//ticker := time.NewTicker(10 * time.Second)
 
-	for {
-		select {
-
-		case p.ball = <-p.ballInput:
-			ticker.Stop()
-			distance := p.getDistanceToBall(p.ball)
-
-			if distance < kickThreshold &&
-				p.ball.GetSurfaceVelocity() < kickVelocityThreshold &&
-				time.Now().Sub(p.ball.LastKick) > 1*time.Second {
-
-				p.applyKick()
-
-			} else {
-
-				time.Sleep(20 * time.Millisecond)
-				p.ball.ApplyKinematics()
-
-			}
-
-			p.log(fmt.Sprintf("Current Position: (%f, %f), Ball Position: (%f, %f)", p.X, p.Y, p.ball.X, p.ball.Y))
-			p.ball.LastUpdated = time.Now()
-
-			p.ballOutput <- p.ball
-			reportDisplay(p.ball, displayChannel)
-
-		case <-ticker.C: // Initial delay before game starts
-		case <-time.After(30 * time.Second): // Lost ball message recovery
-			if p.ball == nil {
-				p.log("Waiting for the ball...\n")
-			} else {
-				p.log("Seems like some player got killed with the ball, throwing another!")
-				p.ballOutput <- p.ball
-				reportDisplay(p.ball, displayChannel)
-			}
-
-			// TODO if holds last ball status - throw it!
-		}
-	}
+	//TODO Challenge:
+	// 1. iterate endlessly
+	// 2. consume from ball channel
+	// 3. decide if player is able to kick and applyKick, otherwise sleep for 20ms and applyKinematics to the ball
+	// 4. reportDisplay and publish ball back to the channel
+	// ----------------
+	// * Pay attention to an initial delay before game starts (preferred, for distributed queues to initiate)
+	// * Bonus: if waiting for more than 30 seconds for the ball message, check if player ever got the ball. If no, log and wait for another 30 seconds. If not - assume another player got killed with the ball, and throw another one to the channel
+	// * consider utilize "select-case" mechanism
 
 	wg.Done()
 }
@@ -151,7 +109,7 @@ func (p *Player) getDistanceToBall(ball *Ball) float64 {
 
 func (p *Player) runToBall() {
 
-	// TODO make view threshold (50) random so that a distant player sees that ball after a period of time
+	// TODO Algorithm: make view threshold (50) random so that a distant player sees that ball after a period of time
 
 	// once every N seconds - the player gets a longer view and can see the ball. Once saw the ball -
 	// he keeps the "long view" mode for a longer period
@@ -193,8 +151,7 @@ func (p *Player) applyKick() {
 	rand.Seed(time.Now().UnixNano())
 	angle := 2 * math.Pi * rand.Float64()
 
-	// put the ball in a larger distance than player kick threshold
-	// TODO put the ball NEAR the threshold so sometimes he might re-kick the ball
+	// TODO Algorithm: put the ball NEAR the threshold so sometimes he might re-kick the ball
 	p.ball.X = p.X + 1.1*kickThreshold*math.Cos(angle)
 	p.ball.Y = p.Y + 1.1*kickThreshold*math.Sin(angle)
 

@@ -1,9 +1,9 @@
 package messaging
 
 import (
-	"fmt"
 	"github.com/matryer/vice"
 	"github.com/matryer/vice/queues/redis"
+	"go-distribution-fuzeday/models"
 	redisv3 "gopkg.in/redis.v3"
 )
 
@@ -29,6 +29,8 @@ const LocalPass = ""
 var RedisAddr = LocalAddr
 var RedisPass = LocalPass
 
+var GlobalDisplayChannel = make(chan *models.DisplayStatus, 1000)
+
 func getTransport() vice.Transport {
 	if transport == nil {
 		switch provider {
@@ -51,18 +53,4 @@ func getTransport() vice.Transport {
 	return transport
 }
 
-func GetOutputChannel(name string) chan<- []byte {
-	if transport == nil {
-		getTransport()
-	}
-	fmt.Printf("GetOutputChannel: %s\n", name)
-	return transport.Send(name)
-}
-
-func GetInputChannel(name string) <-chan []byte {
-	if transport == nil {
-		getTransport()
-	}
-	fmt.Printf("GetInputChannel: %s\n", name)
-	return transport.Receive(name)
-}
+// TODO Challenge: define getter functions for input and output channels of type []byte
