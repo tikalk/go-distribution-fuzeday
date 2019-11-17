@@ -27,7 +27,7 @@ const EnergyLoss = 0.96
 const GlobalDumping = 0.98
 const g = 0.098
 
-// TODO Challenge: replace with input and output channels of type *Ball
+// TODO Challenge (2): replace with input and output channels of type *Ball
 var ballChannel = make(chan *Ball, 1)
 
 func (b *Ball) GetDisplayStatus() *DisplayStatus {
@@ -70,7 +70,9 @@ func (b *Ball) applyKinematicsIteration(timeDiff, iterations float64) {
 
 }
 
-// TODO Challenge: replace with directional input and output channel getters, connect *Ball channel to messaging []byte channels
+//TODO Challenge (2):
+// replace with directional input and output channel getters,
+// connect *Ball channel to messaging []byte channels
 func GetBallChannel() chan *Ball {
 	return ballChannel
 }

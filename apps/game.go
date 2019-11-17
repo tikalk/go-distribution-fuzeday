@@ -85,7 +85,7 @@ func ExecuteSimulation(numPlayers int, externalWaitGroup *sync.WaitGroup) {
 }
 
 func getDisplayOutputChannel() chan *models.DisplayStatus {
-	//TODO Challenge:
+	//TODO Challenge (2):
 	// get []byte output channel from messaging,
 	// create an internal goroutine that consumes messages from an internal *DisplayStatus channel,
 	// serialize them to []byte and populates return DIRECTIONAL output []byte channel

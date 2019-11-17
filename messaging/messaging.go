@@ -53,4 +53,6 @@ func getTransport() vice.Transport {
 	return transport
 }
 
-// TODO Challenge: define getter functions for input and output channels of type []byte
+//TODO Challenge (3): define getter functions for input and output channels of type []byte
+// ------
+// Tip: Use transport.Send and transport.Receive to get directional channels by name

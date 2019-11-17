@@ -13,7 +13,7 @@ func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 	gameField := models.NewGameField()
 
 	// HTTP Server
-	//TODO Challenge:
+	//TODO Challenge (4):
 	//	1. launch HTTP server here on 8080
 	//	2. requests to "/display" should return a json representation of the updated gameField
 	//	3. requests to "/client/" should return static files from directory "display_client". Use http.FileServer...
@@ -21,7 +21,7 @@ func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 	// 	Tip: use http.HandleFunc and http.ListenAndServe
 
 	// Game Field updater
-	//TODO Challenge:
+	//TODO Challenge (4):
 	//	1. iterate over display channel
 	//	2. update gamefield on each consumed value
 	//	------
@@ -36,7 +36,7 @@ func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 }
 
 func getDisplayInputChannel() chan *models.DisplayStatus {
-	//TODO Challenge:
+	//TODO Challenge (2):
 	//  get []byte input channel from messaging,
 	//  create an internal goroutine that consumes messages from it,
 	//  de-serialize them to return type and populates return DIRECTIONAL channel

@@ -24,7 +24,7 @@ type Player struct {
 
 	ball *Ball
 
-	ballChannel chan *Ball // TODO Challenge: replace with directional input and output channels (<-chan and chan<-)
+	ballChannel chan *Ball // TODO Challenge (2): replace with directional input and output channels (<-chan and chan<-)
 
 	idleV     float64
 	idleVx    float64
@@ -60,13 +60,13 @@ func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup
 	go p.setIdleKinematics()
 
 	// Closing distance to ball
-	// TODO Challenge: launch a goroutine that calls p.runToBall every 200 milliseconds or so...
+	// TODO Challenge (1): launch a goroutine that calls p.runToBall every 200 milliseconds or so...
 
 	// reporting player display
-	// TODO Challenge: launch a goroutine that calls reportDisplay() every 200 milliseconds or so...
+	// TODO Challenge (1): launch a goroutine that calls reportDisplay() every 200 milliseconds or so...
 
 	// launching main life cycle
-	// TODO Challenge: call p.mainLifeCycle in a goroutine and implement it internally
+	// TODO Challenge (1): call p.mainLifeCycle in a goroutine and implement it internally
 
 }
 
@@ -90,7 +90,7 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 	// TODO Tip: a ticker returns a channel that is automatically populated with a time message every defined interval
 	//ticker := time.NewTicker(10 * time.Second)
 
-	//TODO Challenge:
+	//TODO Challenge (1):
 	// 1. iterate endlessly
 	// 2. consume from ball channel
 	// 3. decide if player is able to kick and applyKick, otherwise sleep for 20ms and applyKinematics to the ball
