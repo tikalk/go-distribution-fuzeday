@@ -70,7 +70,8 @@ or IDE sync.
 
 
 ### Execution ###
-Whether you run the examples from the code or the provided executable, these are the supported CLI commands:
+Launching `main.go` or fiddling around with the CLI application is the best starting point to understand the project.
+Whether you run the examples from the code or the built executable, these are the supported CLI commands:
 ```$bash
 ./go-distribution-fuzeday join
 ./go-distribution-fuzeday throw
