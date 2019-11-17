@@ -6,9 +6,22 @@ We'll use Go builtin concurrency concepts such as goroutines and channels, [Redi
 message broker and [Vice](https://github.com/matryer/vice) library to connect internal 
 go-channels with Redis.
 
+### The Challenge ###
 This workshop is written as a workbook. Follow the instructions in the 
 `TODO Challenge` comments in order to complete the challenge.
 
+This challenge consists of 4 main tasks:
+1. Concurrency setup: implementing Player behavior by setting up goroutines, consuming and publishing to game and display channels.
+2. Distribution setup: changing channels to directional input and output channels, of `[]byte`, making them ready for distribution.
+3. Vice integration: launching redis, getting []byte channels from it's transport (messaging.go)
+4. Implementing display service
+5. Launching a full distributed game among the team (with a centralized redis server)
+
+* Search for the `TODO Challenge` comments in the code. These are tagged by their corresponding task number.
+* Other `TODO` comments are 
+	* `TODO Tip` - helpful tips regarding the implementation of the tasks
+	* `TODO Bonus` - bonus tasks. Nice and interesting! but not mandatory for a successful execution of the project.
+	* `TODO Algorithm` - once your team is up and ready, there are places where algorithm improvements can take place to make the teams ACTUALLY Brazil and Argentina.
 
 ## Dependencies ## 
 This workshop uses go modules. Make sure your imports are synced in the IDE and go.mod file is updated on build
@@ -57,7 +70,8 @@ or IDE sync.
 
 
 ### Execution ###
-Whether you run the examples from the code or the provided executable, these are the supported CLI commands:
+Launching `main.go` or fiddling around with the CLI application is the best starting point to understand the project.
+Whether you run the examples from the code or the built executable, these are the supported CLI commands:
 ```$bash
 ./go-distribution-fuzeday join
 ./go-distribution-fuzeday throw
