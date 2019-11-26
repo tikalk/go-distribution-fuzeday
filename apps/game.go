@@ -1,13 +1,17 @@
 package apps
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/satori/go.uuid"
+	"go-distribution-fuzeday/messaging"
 	"go-distribution-fuzeday/models"
 	"math/rand"
 	"sync"
 	"time"
 )
+
+var displayOutputChannel chan *models.DisplayStatus = nil
 
 func JoinGame(players []string, team models.Team, externalWaitGroup *sync.WaitGroup) {
 
@@ -88,7 +92,25 @@ func getDisplayOutputChannel() chan *models.DisplayStatus {
 	// get []byte output channel from messaging,
 	// create an internal goroutine that consumes messages from an internal *DisplayStatus channel,
 	// serialize them to []byte and populates return DIRECTIONAL output []byte channel
-	return GlobalDisplayChannel
+	//return GlobalDisplayChannel
+
+	// []byte, error = json.marshall(ball)
+	// ball, error = json.unmarshall([]byte)
+
+	if displayOutputChannel == nil {
+		displayOutputChannel = make(chan *models.DisplayStatus, 1000)
+
+		go func() {
+			for {
+				// Write to messaging
+				ball := <- displayOutputChannel
+				message, _ := json.Marshal(ball)
+				messaging.GetOutputChannel("ball") <- message
+			}
+		}()
+	}
+
+	return displayOutputChannel
 }
 
 func ThrowBall(x, y float64) {

@@ -56,9 +56,11 @@ func getTransport() vice.Transport {
 
 var ballChannel = make(chan []byte, 1)
 func GetInputChannel(key string) <-chan []byte {
-	return ballChannel
+	return getTransport().Receive(key)
+	//return ballChannel
 }
 
 func GetOutputChannel(key string) chan<- []byte {
-	return ballChannel
+	return getTransport().Send(key)
+	//return ballChannel
 }

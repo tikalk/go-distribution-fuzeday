@@ -1,11 +1,15 @@
 package apps
 
 import (
+	"encoding/json"
+	"go-distribution-fuzeday/messaging"
 	"go-distribution-fuzeday/models"
 	"sync"
 )
 
-var GlobalDisplayChannel = make(chan *models.DisplayStatus, 1000)
+//var GlobalDisplayChannel = make(chan *models.DisplayStatus, 1000)
+//var displayInputChannel = make(chan *models.DisplayStatus, 1000)
+var displayInputChannel chan *models.DisplayStatus = nil
 
 func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 
@@ -41,5 +45,21 @@ func getDisplayInputChannel() chan *models.DisplayStatus {
 	//  get []byte input channel from messaging,
 	//  create an internal goroutine that consumes messages from it,
 	//  de-serialize them to return type and populates return DIRECTIONAL channel
-	return GlobalDisplayChannel
+	//return GlobalDisplayChannel
+
+	if displayInputChannel == nil {
+		displayInputChannel = make(chan *models.DisplayStatus, 1000)
+
+		go func() {
+			for {
+				// Read from messaging
+				var displayStatus *models.DisplayStatus = nil
+				response := <- messaging.GetInputChannel("display")
+				json.Unmarshal(response, &displayStatus)
+				displayInputChannel <- displayStatus
+			}
+		}()
+	}
+
+	return displayInputChannel
 }
