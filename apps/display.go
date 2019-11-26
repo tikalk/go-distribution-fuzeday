@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"go-distribution-fuzeday/messaging"
 	"go-distribution-fuzeday/models"
 	"sync"
 )
@@ -40,5 +39,5 @@ func getDisplayInputChannel() chan *models.DisplayStatus {
 	//  get []byte input channel from messaging,
 	//  create an internal goroutine that consumes messages from it,
 	//  de-serialize them to return type and populates return DIRECTIONAL channel
-	return messaging.GlobalDisplayChannel
+	return GlobalDisplayChannel
 }

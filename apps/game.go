@@ -3,7 +3,6 @@ package apps
 import (
 	"fmt"
 	"github.com/satori/go.uuid"
-	"go-distribution-fuzeday/messaging"
 	"go-distribution-fuzeday/models"
 	"math/rand"
 	"sync"
@@ -84,12 +83,14 @@ func ExecuteSimulation(numPlayers int, externalWaitGroup *sync.WaitGroup) {
 
 }
 
+var GlobalDisplayChannel = make(chan *models.DisplayStatus, 1000)
+
 func getDisplayOutputChannel() chan *models.DisplayStatus {
 	//TODO Challenge (2):
 	// get []byte output channel from messaging,
 	// create an internal goroutine that consumes messages from an internal *DisplayStatus channel,
 	// serialize them to []byte and populates return DIRECTIONAL output []byte channel
-	return messaging.GlobalDisplayChannel
+	return GlobalDisplayChannel
 }
 
 func ThrowBall(x, y float64) {

@@ -3,7 +3,6 @@ package messaging
 import (
 	"github.com/matryer/vice"
 	"github.com/matryer/vice/queues/redis"
-	"go-distribution-fuzeday/models"
 	redisv3 "gopkg.in/redis.v3"
 )
 
@@ -29,7 +28,6 @@ const LocalPass = ""
 var RedisAddr = LocalAddr
 var RedisPass = LocalPass
 
-var GlobalDisplayChannel = make(chan *models.DisplayStatus, 1000)
 
 func getTransport() vice.Transport {
 	if transport == nil {
