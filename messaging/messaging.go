@@ -54,7 +54,7 @@ func getTransport() vice.Transport {
 // ------
 // Tip: Use transport.Send and transport.Receive to get directional channels by name
 
-var ballChannel = make(chan []byte, 1)
+//var ballChannel = make(chan []byte, 1)
 func GetInputChannel(key string) <-chan []byte {
 	return getTransport().Receive(key)
 	//return ballChannel

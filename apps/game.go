@@ -105,7 +105,7 @@ func getDisplayOutputChannel() chan *models.DisplayStatus {
 				// Write to messaging
 				ball := <- displayOutputChannel
 				message, _ := json.Marshal(ball)
-				messaging.GetOutputChannel("ball") <- message
+				messaging.GetOutputChannel("display") <- message
 			}
 		}()
 	}

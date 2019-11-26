@@ -4,12 +4,23 @@ import (
 	"encoding/json"
 	"go-distribution-fuzeday/messaging"
 	"go-distribution-fuzeday/models"
+	"net/http"
 	"sync"
 )
 
 //var GlobalDisplayChannel = make(chan *models.DisplayStatus, 1000)
 //var displayInputChannel = make(chan *models.DisplayStatus, 1000)
 var displayInputChannel chan *models.DisplayStatus = nil
+
+//func getDisplay(w http.ResponseWriter, r *http.Request) {
+//	//message := r.URL.Path
+//	//message = strings.TrimPrefix(message, "/")
+//	//message = "Hello " + message
+//
+//	message := <- getDisplayInputChannel()
+//
+//	w.Write([]byte(message))
+//}
 
 func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 
@@ -24,6 +35,17 @@ func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 	//	3. requests to "/client/" should return static files from directory "display_client". Use http.FileServer...
 	// 	------
 	// 	Tip: use http.HandleFunc and http.ListenAndServe
+	http.HandleFunc("/display", func(w http.ResponseWriter, r *http.Request){
+		buf, _ := json.Marshal(gameField)
+		w.Write(buf)
+	})
+	fs := http.FileServer(http.Dir("display_client"))
+	http.Handle("/client/", http.StripPrefix("/client", fs))
+	go func() {
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			panic(err)
+		}
+	}()
 
 	// Game Field updater
 	//TODO Challenge (4):
@@ -31,9 +53,13 @@ func LaunchDisplay(port int, externalWaitGroup *sync.WaitGroup) {
 	//	2. update gamefield on each consumed value
 	//	------
 	//	Tip: use iteration over channel range
+	for {
+		display := <- displayInput
+		gameField.Update(display)
+	}
 
-	displayInput = displayInput // only to prevent "unused variable error", remove after implementation
-	gameField = gameField       // only to prevent "unused variable error", remove after implementation
+	//displayInput = displayInput // only to prevent "unused variable error", remove after implementation
+	//gameField = gameField       // only to prevent "unused variable error", remove after implementation
 
 	if externalWaitGroup != nil {
 		externalWaitGroup.Done()

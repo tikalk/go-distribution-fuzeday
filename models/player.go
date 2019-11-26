@@ -150,11 +150,12 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 			//		}`
 			//	}
 			//}()
-			time.Sleep(20 * time.Millisecond)
+
 			p.ball.ApplyKinematics()
 		}
+		time.Sleep(20 * time.Millisecond)
 
-		reportDisplay(p, displayChannel)
+		reportDisplay(p.ball, displayChannel)
 		//GetBallOutputChannel() <- p.ball
 		p.ballOutputChannel <- p.ball
 	}
