@@ -61,14 +61,40 @@ func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup
 
 	// Closing distance to ball
 	// TODO Challenge (1): launch a goroutine that calls p.runToBall every 200 milliseconds or so...
+	go func() {
+		//ticker := time.NewTicker(200 * time.Millisecond)
+
+		for {
+			time.Sleep(200 * time.Millisecond)
+			p.runToBall()
+		}
+	}()
 
 	// reporting player display
 	// TODO Challenge (1): launch a goroutine that calls reportDisplay() every 200 milliseconds or so...
+	go func() {
+		//ticker := time.NewTicker(200 * time.Millisecond)
+
+		for {
+			time.Sleep(200 * time.Millisecond)
+			reportDisplay(p, displayChannel)
+		}
+	}()
 
 	// launching main life cycle
 	// TODO Challenge (1): call p.mainLifeCycle in a goroutine and implement it internally
+	go func() {
+		//ticker := time.NewTicker(200 * time.Millisecond)
+
+		for {
+			time.Sleep(200 * time.Millisecond)
+			p.mainLifeCycle(displayChannel, wg)
+		}
+	}()
 
 }
+
+
 
 func (p *Player) setIdleKinematics() {
 	nextDelay := 0 * time.Second
@@ -88,7 +114,39 @@ func (p *Player) setIdleKinematics() {
 func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.WaitGroup) {
 
 	// TODO Tip: a ticker returns a channel that is automatically populated with a time message every defined interval
-	//ticker := time.NewTicker(10 * time.Second)
+	//ticker := time.NewTicker(20 * time.Millisecond)
+
+	for {
+		// TODO What is p.ball?
+		p.ball = <- GetBallChannel()
+		// TODO should pass by ref? Whats the syntax?
+		// TODO change kickThreshold
+		if p.getDistanceToBall(p.ball) <= kickThreshold {
+			p.applyKick()
+		} else {
+			// TODO use ticker? How?
+			// TODO must use t or it won't compile?
+			//if (t := <-ticker.C) {
+			//
+			//}
+			//go func() {
+			//	for {
+			//		select {
+			//		case <-done:
+			//			return
+			//		case t := <-ticker.C:
+			//			fmt.Println("Tick at", t)
+			//			ball.ApplyKinematics()
+			//		}
+			//	}
+			//}()
+			time.Sleep(20 * time.Millisecond)
+			p.ball.ApplyKinematics()
+		}
+
+		reportDisplay(p, displayChannel)
+		GetBallChannel() <- p.ball
+	}
 
 	//TODO Challenge (1):
 	// 1. iterate endlessly
