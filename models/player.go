@@ -72,8 +72,10 @@ func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup
 	// reporting player display
 	// TODO Challenge (1): launch a goroutine that calls reportDisplay() every 200 milliseconds or so...
 	go func() {
-		reportDisplay(p, displayChannel)
-		time.Sleep(TimeToSleep * time.Millisecond)
+		for {
+			reportDisplay(p, displayChannel)
+			time.Sleep(TimeToSleep * time.Millisecond)
+		}
 	}()
 
 	// launching main life cycle
@@ -109,17 +111,16 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 	time.Sleep(1 * time.Second)
 
 	for {
-		ball := <-GetBallChannel()
-		p.ball = ball
-		distanceFromBall := p.getDistanceToBall(ball)
+		p.ball = <-GetBallChannel()
+		distanceFromBall := p.getDistanceToBall(p.ball)
 		if distanceFromBall <= kickThreshold {
 			p.applyKick()
 		} else {
 			time.Sleep(20 * time.Millisecond)
-			ball.ApplyKinematics()
+			p.ball.ApplyKinematics()
 		}
 		reportDisplay(p, displayChannel)
-		GetBallChannel() <- ball
+		GetBallChannel() <- p.ball
 
 		// 3. decide if player is able to kick and applyKick, otherwise sleep for 20ms and applyKinematics to the ball
 		// 4. reportDisplay and publish ball back to the channel
