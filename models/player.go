@@ -24,7 +24,9 @@ type Player struct {
 
 	ball *Ball
 
-	ballChannel chan *Ball // TODO Challenge (2): replace with directional input and output channels (<-chan and chan<-)
+	//ballChannel chan *Ball // TODO Challenge (2): replace with directional input and output channels (<-chan and chan<-)
+	ballInputChannel <-chan *Ball
+	ballOutputChannel chan<- *Ball
 
 	idleV     float64
 	idleVx    float64
@@ -55,7 +57,9 @@ func reportDisplay(item DisplayStatusProvider, channel chan *DisplayStatus) {
 
 func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup) {
 
-	p.ballChannel = GetBallChannel()
+	//p.ballChannel = GetBallChannel()
+	p.ballInputChannel = GetBallInputChannel()
+	p.ballOutputChannel = GetBallOutputChannel()
 
 	go p.setIdleKinematics()
 
@@ -83,13 +87,18 @@ func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup
 
 	// launching main life cycle
 	// TODO Challenge (1): call p.mainLifeCycle in a goroutine and implement it internally
+	//p.mainLifeCycle(displayChannel, wg)
+
+
 	go func() {
+		p.mainLifeCycle(displayChannel, wg)
+
 		//ticker := time.NewTicker(200 * time.Millisecond)
 
-		for {
-			time.Sleep(200 * time.Millisecond)
-			p.mainLifeCycle(displayChannel, wg)
-		}
+		//for {
+		//	time.Sleep(200 * time.Millisecond)
+		//	p.mainLifeCycle(displayChannel, wg)
+		//}
 	}()
 
 }
@@ -118,7 +127,8 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 
 	for {
 		// TODO What is p.ball?
-		p.ball = <- GetBallChannel()
+		//p.ball = <- GetBallInputChannel()
+		p.ball = <- p.ballInputChannel
 		// TODO should pass by ref? Whats the syntax?
 		// TODO change kickThreshold
 		if p.getDistanceToBall(p.ball) <= kickThreshold {
@@ -137,7 +147,7 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 			//		case t := <-ticker.C:
 			//			fmt.Println("Tick at", t)
 			//			ball.ApplyKinematics()
-			//		}
+			//		}`
 			//	}
 			//}()
 			time.Sleep(20 * time.Millisecond)
@@ -145,7 +155,8 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 		}
 
 		reportDisplay(p, displayChannel)
-		GetBallChannel() <- p.ball
+		//GetBallOutputChannel() <- p.ball
+		p.ballOutputChannel <- p.ball
 	}
 
 	//TODO Challenge (1):
