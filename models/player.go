@@ -11,6 +11,7 @@ import (
 
 const kickThreshold = 6
 const kickVelocityThreshold = 4
+const TimeToSleep = 200
 
 type Player struct {
 	X      float64
@@ -61,12 +62,24 @@ func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup
 
 	// Closing distance to ball
 	// TODO Challenge (1): launch a goroutine that calls p.runToBall every 200 milliseconds or so...
+	go func() {
+		for {
+			p.runToBall()
+			time.Sleep(TimeToSleep * time.Millisecond)
+		}
+	}()
 
 	// reporting player display
 	// TODO Challenge (1): launch a goroutine that calls reportDisplay() every 200 milliseconds or so...
+	go func() {
+		reportDisplay(p, displayChannel)
+		time.Sleep(TimeToSleep * time.Millisecond)
+	}()
 
 	// launching main life cycle
 	// TODO Challenge (1): call p.mainLifeCycle in a goroutine and implement it internally
+
+	go p.mainLifeCycle(displayChannel, wg)
 
 }
 
@@ -93,13 +106,28 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 	//TODO Challenge (1):
 	// 1. iterate endlessly
 	// 2. consume from ball channel
-	// 3. decide if player is able to kick and applyKick, otherwise sleep for 20ms and applyKinematics to the ball
-	// 4. reportDisplay and publish ball back to the channel
-	// ----------------
-	// * Pay attention to an initial delay before game starts (preferred, for distributed queues to initiate)
-	// * Bonus: if waiting for more than 30 seconds for the ball message, check if player ever got the ball. If no, log and wait for another 30 seconds. If not - assume another player got killed with the ball, and throw another one to the channel
-	// * consider utilize "select-case" mechanism
+	time.Sleep(1 * time.Second)
 
+	for {
+		ball := <-GetBallChannel()
+		p.ball = ball
+		distanceFromBall := p.getDistanceToBall(ball)
+		if distanceFromBall <= kickThreshold {
+			p.applyKick()
+		} else {
+			time.Sleep(20 * time.Millisecond)
+			ball.ApplyKinematics()
+		}
+		reportDisplay(p, displayChannel)
+		GetBallChannel() <- ball
+
+		// 3. decide if player is able to kick and applyKick, otherwise sleep for 20ms and applyKinematics to the ball
+		// 4. reportDisplay and publish ball back to the channel
+		// ----------------
+		// * Pay attention to an initial delay before game starts (preferred, for distributed queues to initiate)
+		// * Bonus: if waiting for more than 30 seconds for the ball message, check if player ever got the ball. If no, log and wait for another 30 seconds. If not - assume another player got killed with the ball, and throw another one to the channel
+		// * consider utilize "select-case" mechanism
+	}
 	wg.Done()
 }
 
