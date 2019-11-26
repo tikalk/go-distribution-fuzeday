@@ -3,7 +3,6 @@ package apps
 import (
 	"fmt"
 	"github.com/satori/go.uuid"
-	"go-distribution-fuzeday/messaging"
 	"go-distribution-fuzeday/models"
 	"math/rand"
 	"sync"
@@ -89,7 +88,7 @@ func getDisplayOutputChannel() chan *models.DisplayStatus {
 	// get []byte output channel from messaging,
 	// create an internal goroutine that consumes messages from an internal *DisplayStatus channel,
 	// serialize them to []byte and populates return DIRECTIONAL output []byte channel
-	return messaging.GlobalDisplayChannel
+	return GlobalDisplayChannel
 }
 
 func ThrowBall(x, y float64) {
@@ -107,6 +106,8 @@ func ThrowBall(x, y float64) {
 	bs := &models.Ball{X: x, Y: y, Vx: 0, Vy: 0, Vz: 0, Z: 50}
 	bs.LastUpdated = time.Now()
 
-	models.GetBallChannel() <- bs
+	models.GetBallChannelOut() <- bs
 
 }
+
+var GlobalDisplayChannel = make(chan *models.DisplayStatus, 1000)

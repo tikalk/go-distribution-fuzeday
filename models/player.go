@@ -25,12 +25,12 @@ type Player struct {
 
 	ball *Ball
 
-	ballChannel chan *Ball // TODO Challenge (2): replace with directional input and output channels (<-chan and chan<-)
-
-	idleV     float64
-	idleVx    float64
-	idleVy    float64
-	idleAngle float64
+	ballChannelIn  <-chan *Ball // TODO Challenge (2): replace with directional input and output channels (<-chan and chan<-)
+	ballChannelOut chan<- *Ball
+	idleV          float64
+	idleVx         float64
+	idleVy         float64
+	idleAngle      float64
 }
 
 func (p *Player) GetDisplayStatus() *DisplayStatus {
@@ -56,7 +56,8 @@ func reportDisplay(item DisplayStatusProvider, channel chan *DisplayStatus) {
 
 func (p *Player) Activate(displayChannel chan *DisplayStatus, wg *sync.WaitGroup) {
 
-	p.ballChannel = GetBallChannel()
+	p.ballChannelIn = GetBallChannelIn()
+	p.ballChannelOut = GetBallChannelOut()
 
 	go p.setIdleKinematics()
 
@@ -111,7 +112,7 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 	time.Sleep(1 * time.Second)
 
 	for {
-		p.ball = <-GetBallChannel()
+		p.ball = <-ballChannelIn
 		distanceFromBall := p.getDistanceToBall(p.ball)
 		if distanceFromBall <= kickThreshold {
 			p.applyKick()
@@ -120,7 +121,7 @@ func (p *Player) mainLifeCycle(displayChannel chan *DisplayStatus, wg *sync.Wait
 			p.ball.ApplyKinematics()
 		}
 		reportDisplay(p, displayChannel)
-		GetBallChannel() <- p.ball
+		ballChannelOut <- p.ball
 
 		// 3. decide if player is able to kick and applyKick, otherwise sleep for 20ms and applyKinematics to the ball
 		// 4. reportDisplay and publish ball back to the channel
